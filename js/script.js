@@ -1,52 +1,3 @@
-<script defer data-domain="sonukabill.tiiny.site" src="https://analytics.tiiny.site/js/plausible.js"></script><script type="text/javascript" src="https://tiiny.host/ad-script.js"></script></head>
-<body class="light-mode">
-  <button id="theme-toggle" onclick="cycleTheme()">☀️</button>
-
-  <main class="container">
-    <h2>Electricity Bill Calculator</h2>
-    <div class="meter-select">
-      <label for="meterSelect">Select Meter:</label>
-      <select id="meterSelect" onchange="switchMeter()">
-        <option value="neeche">Neeche Ghar</option>
-        <option value="uper">Uper Ghar</option>
-      </select>
-    </div>
-
-    <div class="input-card">
-      <div class="input-group">
-        <label for="lastReading">Last Month Reading:</label>
-        <input type="number" id="lastReading" placeholder="e.g. 16955" autocomplete="off" />
-      </div><br>
-      <div class="input-group">
-        <label for="currentReading">Current Reading:</label>
-        <input type="number" id="currentReading" placeholder="e.g. 17033" autocomplete="off" />
-        <button id="calculate" class="button-common" onclick="calculateBill()">Calculate</button>
-        <button id="reset" class="button-common" onclick="resetInputs()">Reset</button>
-      </div>
-      <div id="saveMessage" style="margin-top: 10px; font-weight: 600;"></div>
-    </div>
-
-    <div id="result">Your bill details will appear here.</div>
-    <div id="history">No previous bills yet.</div>
-
-    <div class="centered">
-      <button onclick="clearHistory()" class="clear-history-btn">Clear History</button>
-    </div>
-  </main>
-
-  <div class="footer">
-    <div>Made with ❤️ by <strong>Sonu Saw</strong></div>
-    <div style="margin-top: 6px;">
-      <a href="https://www.youtube.com/channel/UCNlLYcAwra9XYERCx0gPsBQ" target="_blank">
-        <img class="social-icon" src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" title="YouTube Channel" />
-      </a>
-      <a href="https://www.instagram.com/sawsonu123" target="_blank">
-        <img class="social-icon" src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" title="Instagram Profile" />
-      </a>
-    </div>
-  </div>
-  
-  
     <script>
     let currentMeter = "neeche";
 
@@ -257,4 +208,3 @@ window.onload = function () {
 };
 
   </script>
-  
