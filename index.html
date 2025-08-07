@@ -5,7 +5,582 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Electricity Bill Calculator</title>
-<link rel="stylesheet" href="css/style.css">
-<script src="js/script.js"></script>
+<style>
+  :root {
+    --neon-text: #00e6e6;
+    --neon-accent: #ff6a00;
+    --light-bg: #f3f4f6;
+    --dark-bg: #121212;
+    --neon-bg: #1a1a1a;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--light-bg);
+    color: #111;
+  }
+
+  body.dark-mode {
+    background-color: var(--dark-bg);
+    color: #eee;
+  }
+
+  body.neon-mode {
+    background-color: var(--neon-bg);
+    color: var(--neon-text);
+  }
+
+  main.container {
+    max-width: 500px;
+    margin: auto;
+    padding: 20px 20px 100px;
+    flex-grow: 1;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .meter-select {
+    background-color: #e0f2fe;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .dark-mode .meter-select { background-color: #1f1f1f; }
+  .neon-mode .meter-select {
+    background-color: #2a2a2a;
+    border: 1px solid var(--neon-accent);
+  }
+
+  .meter-select label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .meter-select select, .input-group input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  .meter-select select {
+    border: 2px solid #0284c7;
+  }
+
+  .input-card, #result, #history {
+    background-color: white;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  .dark-mode .input-card, .dark-mode #result, .dark-mode #history {
+    background-color: #1f1f1f;
+  }
+
+  .neon-mode .input-card, .neon-mode #result, .neon-mode #history {
+    background-color: #1a1a1a;
+    color: var(--neon-text);
+    box-shadow: 0 0 10px var(--neon-accent);
+  }
+
+  .input-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .input-group input {
+    border: 2px solid #4b5563;
+  }
+
+  .input-group input::placeholder { color: #888; }
+
+  .button-common {
+    width: 48%;
+    margin-top: 10px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+
+  #calculate { background-color: #2563eb; color: white; }
+  #reset { background-color: #ef4444; color: White; }
+
+  #calculate:hover, #reset:hover { transform: scale(1.05); }
+
+  .neon-mode #calculate {
+    background-color: var(--neon-accent);
+    color: #000;
+    box-shadow: 0 0 10px var(--neon-accent);
+  }
+
+  .neon-mode #reset {
+    background-color: transparent;
+    border: 2px solid var(--neon-text);
+    color: var(--neon-text);
+  }
+
+  .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 15px;
+    padding: 10px 0;
+    background: #ffffff;
+    box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
+    z-index: 999;
+  }
+
+  .dark-mode .footer { background: #1f1f1f; color: #ccc; }
+  .neon-mode .footer {
+    background: #000000;
+    color: var(--neon-text);
+    box-shadow: 0 -1px 10px var(--neon-accent);
+  }
+
+  .social-icon {
+    width: 24px;
+    margin: 0 6px;
+    vertical-align: middle;
+    transition: transform 0.3s ease;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+  }
+
+  .social-icon:hover { transform: scale(1.2); }
+
+  .footer a { display: inline-block; }
+
+  .footer strong {
+    transition: color 0.3s ease;
+  }
+
+  .footer strong:hover {
+    color: #2563eb;
+  }
+
+  #theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    padding: 10px 14px;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    z-index: 1000;
+    cursor: pointer;
+  }
+
+  #result table, #history table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+
+  #result th, #result td, #history th, #history td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+    font-size: 15px;
+  }
+
+  .warning {
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .warning.green { background-color: #d1fae5; color: #065f46; }
+  .warning.orange { background-color: #fef3c7; color: #92400e; }
+  .warning.red { background-color: #fee2e2; color: #991b1b; }
+
+  /* Apply same backgrounds and text in dark/neon mode */
+  .dark-mode .warning.green,
+  .neon-mode .warning.green {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+  }
+
+  .dark-mode .warning.orange,
+  .neon-mode .warning.orange {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+  }
+
+  .dark-mode .warning.red,
+  .neon-mode .warning.red {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+  }
+
+  .dark-mode #result table, .dark-mode #history table {
+    border-color: #444;
+  }
+
+  .dark-mode #result th, .dark-mode #result td,
+  .dark-mode #history th, .dark-mode #history td {
+    background-color: #1f1f1f;
+    color: #eee;
+    border: 1px solid #444;
+  }
+
+  .neon-mode #result table, .neon-mode #history table {
+    color: var(--neon-text);
+    border-color: var(--neon-accent);
+  }
+
+  .neon-mode #result th, .neon-mode #result td,
+  .neon-mode #history th, .neon-mode #history td {
+    border: 1px solid var(--neon-accent);
+    background-color: transparent;
+  }
+
+  .clear-history-btn {
+    padding: 10px 20px;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .clear-history-btn:hover {
+    background: #b91c1c;
+    transform: scale(1.05);
+  }
+
+  .neon-mode .clear-history-btn {
+    background-color: transparent;
+    color: var(--neon-text);
+    border: 2px solid var(--neon-accent);
+  }
+
+  .neon-mode .clear-history-btn:hover {
+    background-color: var(--neon-accent);
+    color: black;
+  }
+
+  .centered { text-align: center; }
+  .billCountdown {
+  text-align: center;
+  font-weight: bold;
+  font-style: italic;
+  animation: blink 1s infinite;
+}
+
+.urgent {
+  color: orange;
+}
+
+.very-urgent {
+  color: red;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+
+}
+
+
+
+</style>
+<script defer data-domain="sonukabill.tiiny.site" src="https://analytics.tiiny.site/js/plausible.js"></script></head>
+<body class="light-mode">
+  <button id="theme-toggle" onclick="cycleTheme()">☀️</button>
+
+  <main class="container">
+    <h2>Electricity Bill Calculator</h2>
+    <div class="meter-select">
+      <label for="meterSelect">Select Meter:</label>
+      <select id="meterSelect" onchange="switchMeter()">
+        <option value="neeche">Neeche Ghar</option>
+        <option value="uper">Uper Ghar</option>
+      </select>
+    </div>
+
+    <div class="input-card">
+      <div class="input-group">
+        <label for="lastReading">Last Month Reading:</label>
+        <input type="number" id="lastReading" placeholder="e.g. 16955" autocomplete="off" />
+      </div><br>
+      <div class="input-group">
+        <label for="currentReading">Current Reading:</label>
+        <input type="number" id="currentReading" placeholder="e.g. 17033" autocomplete="off" />
+        <button id="calculate" class="button-common" onclick="calculateBill()">Calculate</button>
+        <button id="reset" class="button-common" onclick="resetInputs()">Reset</button>
+      </div>
+      <div id="saveMessage" style="margin-top: 10px; font-weight: 600;"></div>
+    </div>
+
+    <div id="result">Your bill details will appear here.</div>
+    <div id="history">No previous bills yet.</div>
+
+    <div class="centered">
+      <button onclick="clearHistory()" class="clear-history-btn">Clear History</button>
+    </div>
+  </main>
+
+  <div class="footer">
+    <div>Made with ❤️ by <strong>Sonu Saw</strong></div>
+    <div style="margin-top: 6px;">
+      <a href="https://www.youtube.com/channel/UCNlLYcAwra9XYERCx0gPsBQ" target="_blank">
+        <img class="social-icon" src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" title="YouTube Channel" />
+      </a>
+      <a href="https://www.instagram.com/sawsonu123" target="_blank">
+        <img class="social-icon" src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" title="Instagram Profile" />
+      </a>
+    </div>
+  </div>
+  
+  
+    <script>
+	
+    let currentMeter = "neeche";
+
+    const defaultLastReadings = {
+	neeche: 17099,
+      uper: 3690    };
+
+    const thresholds = [
+      { limit: 25, message: "Low usage — good job saving energy!", color: "green" },
+      { limit: 50, message: "Moderate usage — watch your consumption.", color: "green" },
+      { limit: 75, message: "High usage — try to reduce.", color: "orange" },
+      { limit: 90, message: "Very high usage — consider energy-saving appliances.", color: "red" },
+      { limit: 100, message: "Extreme usage — urgent action needed to save energy!", color: "red" }
+    ];
+
+    const tariffSlabs = [
+      { upto: 100, rate: 4.71 },
+      { upto: 300, rate: 10.29 },
+      { upto: Infinity, rate: 14.55 }
+    ];
+
+    window.onload = function () {
+      currentMeter = document.getElementById("meterSelect").value;
+      loadLastReading();
+      renderHistory();
+    };
+
+function switchMeter() {
+  currentMeter = document.getElementById("meterSelect").value;
+  loadLastReading();
+  renderHistory();
+  document.getElementById("result").innerHTML = "Your bill details will appear here.";
+  clearMessage();
+}
+
+
+    function getKey(name) {
+      return `${currentMeter}_${name}`;
+    }
+
+function loadLastReading() {
+  const savedLast = localStorage.getItem(getKey("lastReading"));
+  console.log("Loaded from storage:", savedLast, "for meter:", currentMeter);
+
+  const lastReading = (savedLast && savedLast.length >= 4 && Number(savedLast) > 1000)
+    ? Number(savedLast)
+    : defaultLastReadings[currentMeter];
+
+  document.getElementById("lastReading").value = lastReading;
+
+  // Remove last 2 digits for current reading (applies to all meters)
+  const reducedReading = Math.floor(lastReading / 100);
+  document.getElementById("currentReading").value = reducedReading;
+}
+
+
+
+    function resetInputs() {
+      document.getElementById("lastReading").value = '';
+      document.getElementById("currentReading").value = '';
+      document.getElementById("result").innerHTML = 'Your bill details will appear here.';
+      clearMessage();
+    }
+
+    function calculateEnergy(units) {
+      let remaining = units, energy = 0, prevLimit = 0;
+      for (let slab of tariffSlabs) {
+        const slabUnits = Math.min(remaining, slab.upto - prevLimit);
+        energy += slabUnits * slab.rate;
+        remaining -= slabUnits;
+        prevLimit = slab.upto;
+        if (remaining <= 0) break;
+      }
+      return energy;
+    }
+
+    function calculateTotal(energy, units) {
+      const fixed = 138, wheelingRate = 1.17;
+      const wheeling = units * wheelingRate;
+      const dutyAmt = (energy + fixed + wheeling) * 0.16;
+      return { fixed, wheeling, dutyAmt, total: energy + fixed + wheeling + dutyAmt };
+    }
+
+    function getWarning(units) {
+      if (units > 200) {
+        alert("⚠️ Very high usage detected. Something is likely wrong or needs checking.");
+        return { message: "⚠️ Unusual usage. Check readings or wiring.", color: "red" };
+      }
+      return thresholds.find(t => units <= t.limit) || thresholds[thresholds.length - 1];
+    }
+
+    function calculateBill() {
+      clearMessage();
+      const last = parseFloat(document.getElementById("lastReading").value);
+      const curr = parseFloat(document.getElementById("currentReading").value);
+      const msg = document.getElementById("saveMessage");
+
+      if (isNaN(last) || isNaN(curr) || last < 0 || curr < 0) {
+        msg.style.color = "red";
+        msg.textContent = "Please enter valid numeric readings.";
+        return;
+      }
+      if (curr < last) {
+        msg.style.color = "red";
+        msg.textContent = "⚠️ Current reading must be greater than or equal to last month's reading.";
+        return;
+      }
+
+      const units = curr - last;
+      const energy = calculateEnergy(units);
+      const charges = calculateTotal(energy, units);
+      const warning = getWarning(units);
+
+      // localStorage.setItem(getKey("lastReading"), curr); // Disabled to keep default reading fixed
+
+// Countdown to 12th logic
+function getBillCountdownRow() {
+  const today = new Date();
+  const currentDay = today.getDate();
+
+  let colorClass = "";
+
+  if ([10, 11, 12].includes(currentDay)) {
+    colorClass = "red-text";
+  } else if (currentDay >= 13 && currentDay <= 31) {
+    colorClass = "black-text";
+  } else if (currentDay >= 1 && currentDay <= 9) {
+    colorClass = "blue-text";
+  }
+
+  const next12th = new Date(today.getFullYear(), today.getMonth() + (currentDay > 12 ? 1 : 0), 12);
+  const daysLeft = Math.ceil((next12th - today) / (1000 * 60 * 60 * 24));
+
+  const message = `${daysLeft} more day${daysLeft !== 1 ? "s" : ""} left for bill generation`;
+
+  return `<tr><td colspan="2" class="billCountdown ${colorClass}">${message}</td></tr>`;
+}
+
+
+
+let billCountdownRow = getBillCountdownRow(); // ✅ This must be declared before table is created
+
+const table = `
+  <table>
+    <tr><th>Description</th><th>₹</th></tr>
+    <tr><td>Units Used</td><td>${units.toFixed(2)}</td></tr>
+    <tr><td>Energy Charge</td><td>${energy.toFixed(2)}</td></tr>
+    <tr><td>Wheeling Charge</td><td>${charges.wheeling.toFixed(2)}</td></tr>
+    <tr><td>Fixed Charge</td><td>${charges.fixed.toFixed(2)}</td></tr>
+    <tr><td>Electricity Duty (16%)</td><td>${charges.dutyAmt.toFixed(2)}</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>₹${charges.total.toFixed(2)}</strong></td></tr>
+    <tr><td colspan="2" class="warning ${warning.color}">${warning.message}</td></tr>
+    ${billCountdownRow}
+  </table>`;
+
+
+      document.getElementById("result").innerHTML = table;
+      saveToHistory(units, charges.total);
+    }
+
+    function saveToHistory(units, total) {
+      const key = getKey("billHistory");
+      const prev = JSON.parse(localStorage.getItem(key)) || [];
+      prev.push({ date: new Date().toLocaleString(), units, total });
+      localStorage.setItem(key, JSON.stringify(prev));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const key = getKey("billHistory");
+      const hist = JSON.parse(localStorage.getItem(key)) || [];
+      const box = document.getElementById("history");
+      if (!hist.length) {
+        box.innerHTML = "No previous bills yet.";
+        return;
+      }
+      let html = `<h3>History (${currentMeter === "neeche" ? "Neeche Ghar" : "Uper Ghar"})</h3>
+        <table><tr><th>Date</th><th>Units</th><th>Total</th></tr>`;
+      hist.slice(-5).reverse().forEach(e => {
+        html += `<tr><td>${e.date}</td><td>${e.units.toFixed(2)}</td><td>₹${e.total.toFixed(2)}</td></tr>`;
+      });
+      html += "</table>";
+      box.innerHTML = html;
+    }
+
+    function clearHistory() {
+      if (confirm("Clear history for this meter?")) {
+        localStorage.removeItem(getKey("billHistory"));
+        renderHistory();
+      }
+    }
+
+    function clearMessage() {
+      document.getElementById("saveMessage").textContent = "";
+    }
+
+ 	let themeIndex = parseInt(localStorage.getItem("themeIndex")) || 0;
+const themes = ["light-mode", "dark-mode", "neon-mode"];
+const emojis = ["☀️", "🌙", "💡"];
+
+function applyTheme(index) {
+  document.body.classList.remove(...themes);
+  document.body.classList.add(themes[index]);
+  document.getElementById("theme-toggle").textContent = emojis[index];
+  localStorage.setItem("themeIndex", index);
+}
+
+function cycleTheme() {
+  themeIndex = (themeIndex + 1) % themes.length;
+  applyTheme(themeIndex);
+}
+
+window.onload = function () {
+  currentMeter = document.getElementById("meterSelect").value;
+  applyTheme(themeIndex);
+  loadLastReading();
+  renderHistory();
+};
+
+  </script>
+  
+  
+  
 </body>
 </html>
