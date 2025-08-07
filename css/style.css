@@ -1,5 +1,4 @@
-<style>
-  :root {
+:root {
     --neon-text: #00e6e6;
     --neon-accent: #ff6a00;
     --light-bg: #f3f4f6;
@@ -296,7 +295,5 @@
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
+
 }
-
-
-</style>
